@@ -17,75 +17,85 @@ public class waterFlow {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		readInput(input);
-		for(Task task: taskList){
-			if(task.getAlgorithm().equals("BFS")){
+		for (Task task : taskList) {
+			if (task.getAlgorithm().equals("BFS")) {
 				BFS(task);
-			}else if(task.getAlgorithm().equals("DFS")){
+			} else if (task.getAlgorithm().equals("DFS")) {
 				DFS(task);
-			}else if(task.getAlgorithm().equals("UCS")){
+			} else if (task.getAlgorithm().equals("UCS")) {
 				UCS(task);
-			}else{
+			} else {
 				System.out.println("task invalid");
 			}
 		}
 	}
 
-	public static void DFS(Task task){
+	public static void DFS(Task task) {
 		Node node = new Node();
 		node.setState(task.getSource());
 		recursiveDFS(node, task);
 	}
-	
-	public static void recursiveDFS(Node node, Task task){
-		if(task.getDestList().contains(node.getState())){
+
+	public static void recursiveDFS(Node node, Task task) {
+		if (task.getDestList().contains(node.getState())) {
 			System.out.println(node.getState());
-			System.out.println((node.getCost()+task.getStartTime()) % 24);
+			System.out.println((node.getCost() + task.getStartTime()) % 24);
 			System.out.println();
 			return;
 		}
-		for(Pipe pipe: task.getPipeList()){
-			if(pipe.getStart().equals(node.getState())){
-				Node child = new Node();
-				child.setState(pipe.getEnd());
-				child.setCost(node.getCost()+1);
-				recursiveDFS(child, task);
+		List<String> children = new ArrayList<String>();
+		for (Pipe pipe : task.getPipeList()) {
+			if (pipe.getStart().equals(node.getState())) {
+				children.add(pipe.getEnd());
 			}
 		}
+		Collections.sort(children);
+		for (String state : children) {
+			Node child = new Node();
+			child.setState(state);
+			child.setCost(node.getCost() + 1);
+			recursiveDFS(child, task);
+		}
 	}
-	
-	public static void UCS(Task task){
+
+	public static void UCS(Task task) {
 		UCSNode node = new UCSNode();
 		node.setState(task.getSource());
 		List<String> destList = task.getDestList();
 		List<Pipe> pipeList = task.getPipeList();
 		Comparator<UCSNode> costComparator = new CostComparator();
-		PriorityQueue<UCSNode> frontier = new PriorityQueue<UCSNode>(costComparator);
+		PriorityQueue<UCSNode> frontier = new PriorityQueue<UCSNode>(
+				costComparator);
 		PriorityQueue<UCSNode> explored = new PriorityQueue<>(costComparator);
 		frontier.add(node);
-		while(!frontier.isEmpty()){
+		while (!frontier.isEmpty()) {
 			node = frontier.poll();
-			if(destList.contains(node.getState())){
+			if (destList.contains(node.getState())) {
 				System.out.println(node.getState());
-				System.out.println((task.getStartTime()+node.getCost()) % 24);
+				System.out.println((task.getStartTime() + node.getCost()) % 24);
 				System.out.println();
 				return;
 			}
 			explored.add(node);
-			for(Pipe pipe: pipeList){
-				if(pipe.getStart().equals(node.getState())){
+			for (Pipe pipe : pipeList) {
+				if (pipe.getStart().equals(node.getState())) {
 					UCSNode child = new UCSNode();
 					child.setState(pipe.getEnd());
-					child.setCost(pipe.getLength()+node.getCost());
+					child.setCost(pipe.getLength() + node.getCost());
 					child.setStartTimes(pipe.getStartTimes());
 					child.setEndTimes(pipe.getEndTimes());
 					child.setOffNum(pipe.getOffNum());
-					if(!(containState(frontier, child.getState()) || containState(explored, child.getState()))){
-						if(!checkOff(child, task.getStartTime()+node.getCost())){
+					if (!(containState(frontier, child.getState()) || containState(
+							explored, child.getState()))) {
+						if (!checkOff(child,
+								task.getStartTime() + node.getCost())) {
 							frontier.add(child);
 						}
-					}else if(!checkOff(child, task.getStartTime()+node.getCost())){
-						for(UCSNode tmp: frontier){
-							if(tmp.getState().equals(child.getState()) && tmp.getCost() > child.getCost()){
+					} else if (!checkOff(child,
+							task.getStartTime() + node.getCost())) {
+						for (UCSNode tmp : frontier) {
+							if (tmp.getState().equals(child.getState())
+									&& tmp.getCost() > child.getCost()) {
 								frontier.remove(tmp);
 								frontier.add(child);
 							}
@@ -98,7 +108,7 @@ public class waterFlow {
 		System.out.println();
 		return;
 	}
-	
+
 	public static void BFS(Task task) {
 		Node node = new Node();
 		node.setState(task.getSource());
@@ -124,16 +134,18 @@ public class waterFlow {
 			}
 			Collections.sort(children); // uppercase will be before lowercase
 			for (String child : children) {
-				if (!(containState(frontier, child) || containState(explored, child))) {
+				if (!(containState(frontier, child) || containState(explored,
+						child))) {
 					if (destList.contains(child)) {
 						System.out.println(child);
-						System.out.println((task.getStartTime()+ node.getCost() + 1) % 24);
+						System.out.println((task.getStartTime()
+								+ node.getCost() + 1) % 24);
 						System.out.println();
 						return;
 					}
 					Node currentNode = new Node();
 					currentNode.setState(child);
-					currentNode.setCost(node.getCost()+1);
+					currentNode.setCost(node.getCost() + 1);
 					frontier.addLast(currentNode);
 				}
 			}
@@ -146,37 +158,40 @@ public class waterFlow {
 
 	/**
 	 * check if at the time, the pipe is off or not
+	 * 
 	 * @param child
 	 * @param time
 	 * @return true if off
 	 */
-	public static boolean checkOff(UCSNode child, int time){
+	public static boolean checkOff(UCSNode child, int time) {
 		time %= 24;
-		for(int i=0; i<child.getOffNum(); i++){
-			if(child.getStartTimes()[i] <= time && time <= child.getEndTimes()[i]){
+		for (int i = 0; i < child.getOffNum(); i++) {
+			if (child.getStartTimes()[i] <= time
+					&& time <= child.getEndTimes()[i]) {
 				return true;
 			}
 		}
 		return false;
 	}
-	public static boolean containState(LinkedList<Node> list, String state){
-		for(Node node: list){
-			if(node.getState().equals(state)){
+
+	public static boolean containState(LinkedList<Node> list, String state) {
+		for (Node node : list) {
+			if (node.getState().equals(state)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
-	public static boolean containState(PriorityQueue<UCSNode> list, String state){
-		for(Node node: list){
-			if(node.getState().equals(state)){
+
+	public static boolean containState(PriorityQueue<UCSNode> list, String state) {
+		for (Node node : list) {
+			if (node.getState().equals(state)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	public static void readInput(String input) {
 		taskList = new ArrayList<Task>();
 		try {
