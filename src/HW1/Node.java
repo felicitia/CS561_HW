@@ -3,7 +3,6 @@ package HW1;
 class Node {
 	private String state = null;
 	private int cost = 0;
-
 	public String getState() {
 		return state;
 	}
