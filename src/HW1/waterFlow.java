@@ -1,7 +1,10 @@
 package HW1;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,8 +16,19 @@ public class waterFlow {
 	private static int testNum;
 	private static List<Task> taskList;
 	private static String input = "/Users/felicitia/Documents/semester_3/561/HW1/sampleInput.txt";
+	private static PrintWriter writer = null;
 
 	public static void main(String[] args) {
+		
+		try {
+			writer = new PrintWriter("output.txt", "UTF-8");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// TODO Auto-generated method stub
 		readInput(input);
 		for (Task task : taskList) {
@@ -28,6 +42,7 @@ public class waterFlow {
 				System.out.println("task invalid");
 			}
 		}
+		writer.close();
 	}
 
 	public static void DFS(Task task) {
@@ -38,9 +53,9 @@ public class waterFlow {
 
 	public static void recursiveDFS(Node node, Task task) {
 		if (task.getDestList().contains(node.getState())) {
-			System.out.println(node.getState());
-			System.out.println((node.getCost() + task.getStartTime()) % 24);
-			System.out.println();
+			int outputTime = (node.getCost() + task.getStartTime()) % 24;
+			String line = node.getState() + " " + outputTime;
+			writeOutput(writer, line);
 			return;
 		}
 		List<String> children = new ArrayList<String>();
@@ -71,9 +86,9 @@ public class waterFlow {
 		while (!frontier.isEmpty()) {
 			node = frontier.poll();
 			if (destList.contains(node.getState())) {
-				System.out.println(node.getState());
-				System.out.println((task.getStartTime() + node.getCost()) % 24);
-				System.out.println();
+				int outputTime = (task.getStartTime() + node.getCost()) % 24;
+				String line = node.getState()+" "+outputTime;
+				writeOutput(writer, line);
 				return;
 			}
 			explored.add(node);
@@ -104,8 +119,7 @@ public class waterFlow {
 				}
 			}
 		}
-		System.out.println("None");
-		System.out.println();
+		writeOutput(writer, "None");
 		return;
 	}
 
@@ -115,9 +129,9 @@ public class waterFlow {
 		List<String> destList = task.getDestList();
 		List<Pipe> pipeList = task.getPipeList();
 		if (destList.contains(node.getState())) {
-			System.out.println(node.getState());
-			System.out.println(task.getStartTime() % 24);
-			System.out.println();
+			int outputTime = task.getStartTime() % 24;
+			String line = node.getState()+" "+outputTime;
+			writeOutput(writer, line);
 			return;
 		}
 		LinkedList<Node> frontier = new LinkedList<Node>();
@@ -137,10 +151,10 @@ public class waterFlow {
 				if (!(containState(frontier, child) || containState(explored,
 						child))) {
 					if (destList.contains(child)) {
-						System.out.println(child);
-						System.out.println((task.getStartTime()
-								+ node.getCost() + 1) % 24);
-						System.out.println();
+						int outputTime = (task.getStartTime()
+								+ node.getCost() + 1) % 24;
+						String line = child+" "+outputTime;
+						writeOutput(writer, line);
 						return;
 					}
 					Node currentNode = new Node();
@@ -151,8 +165,7 @@ public class waterFlow {
 			}
 			children.clear();
 		}
-		System.out.println("None");
-		System.out.println();
+		writeOutput(writer, "None");
 		return;
 	}
 
@@ -205,6 +218,10 @@ public class waterFlow {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void writeOutput(PrintWriter writer, String line) {
+		writer.println(line);
 	}
 
 	public static Task readTask(BufferedReader br, String line) {
