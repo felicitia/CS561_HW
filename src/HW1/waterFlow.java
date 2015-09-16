@@ -17,9 +17,11 @@ public class waterFlow {
 	private static List<Task> taskList;
 	private static String input = "/Users/felicitia/Documents/semester_3/561/HW1/sampleInput.txt";
 	private static PrintWriter writer = null;
+	private static boolean DFS = true;
+	private static boolean BFS = false;
 
 	public static void main(String[] args) {
-		
+
 		try {
 			writer = new PrintWriter("output.txt", "UTF-8");
 		} catch (FileNotFoundException e) {
@@ -33,9 +35,10 @@ public class waterFlow {
 		readInput(input);
 		for (Task task : taskList) {
 			if (task.getAlgorithm().equals("BFS")) {
-				BFS(task);
+				BDFS(task, BFS);
 			} else if (task.getAlgorithm().equals("DFS")) {
-				DFS(task);
+				// DFSRe(task);
+				BDFS(task, DFS);
 			} else if (task.getAlgorithm().equals("UCS")) {
 				UCS(task);
 			} else {
@@ -45,7 +48,7 @@ public class waterFlow {
 		writer.close();
 	}
 
-	public static void DFS(Task task) {
+	public static void DFSRe(Task task) {
 		Node node = new Node();
 		node.setState(task.getSource());
 		recursiveDFS(node, task);
@@ -87,7 +90,7 @@ public class waterFlow {
 			node = frontier.poll();
 			if (destList.contains(node.getState())) {
 				int outputTime = (task.getStartTime() + node.getCost()) % 24;
-				String line = node.getState()+" "+outputTime;
+				String line = node.getState() + " " + outputTime;
 				writeOutput(writer, line);
 				return;
 			}
@@ -123,14 +126,14 @@ public class waterFlow {
 		return;
 	}
 
-	public static void BFS(Task task) {
+	public static void BDFS(Task task, boolean strategy) {
 		Node node = new Node();
 		node.setState(task.getSource());
 		List<String> destList = task.getDestList();
 		List<Pipe> pipeList = task.getPipeList();
 		if (destList.contains(node.getState())) {
 			int outputTime = task.getStartTime() % 24;
-			String line = node.getState()+" "+outputTime;
+			String line = node.getState() + " " + outputTime;
 			writeOutput(writer, line);
 			return;
 		}
@@ -151,16 +154,19 @@ public class waterFlow {
 				if (!(containState(frontier, child) || containState(explored,
 						child))) {
 					if (destList.contains(child)) {
-						int outputTime = (task.getStartTime()
-								+ node.getCost() + 1) % 24;
-						String line = child+" "+outputTime;
+						int outputTime = (task.getStartTime() + node.getCost() + 1) % 24;
+						String line = child + " " + outputTime;
 						writeOutput(writer, line);
 						return;
 					}
 					Node currentNode = new Node();
 					currentNode.setState(child);
 					currentNode.setCost(node.getCost() + 1);
-					frontier.addLast(currentNode);
+					if (BFS) {
+						frontier.addLast(currentNode);
+					} else {
+						frontier.addFirst(currentNode);
+					}
 				}
 			}
 			children.clear();
