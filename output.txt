@@ -1,3 +1,18 @@
-B 4
-Q 8
-BA 6
+D 5
+D 1
+D 3
+D 1
+D 5
+D 4
+D2 3
+D1 2
+D2 3
+D1 2
+None
+None
+FB 11
+None
+None
+None
+E 6
+G 15

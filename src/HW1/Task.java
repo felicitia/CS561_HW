@@ -12,10 +12,7 @@ public class Task {
 	private int pipeNum;
 	private List<Pipe> pipeList;
 	private int startTime;
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
+	private int taskNum;
 	
 	public Task() {
 		super();
@@ -75,6 +72,14 @@ public class Task {
 
 	public void setStartTime(int startTime) {
 		this.startTime = startTime;
+	}
+
+	public int getTaskNum() {
+		return taskNum;
+	}
+
+	public void setTaskNum(int taskNum) {
+		this.taskNum = taskNum;
 	}
 	
 }

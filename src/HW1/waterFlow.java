@@ -8,14 +8,16 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 public class waterFlow {
 	private static int testNum;
 	private static List<Task> taskList;
-	private static String input = "/Users/felicitia/Documents/semester_3/561/HW1/sampleInput.txt";
+	private static String input = "/Users/felicitia/Desktop/input_lwl.txt";
 	private static PrintWriter writer = null;
 	private static boolean DFS = true;
 	private static boolean BFS = false;
@@ -34,11 +36,12 @@ public class waterFlow {
 		// TODO Auto-generated method stub
 		readInput(input);
 		for (Task task : taskList) {
+//			writeOutput(writer, ""+task.getTaskNum());
 			if (task.getAlgorithm().equals("BFS")) {
 				BDFS(task, BFS);
 			} else if (task.getAlgorithm().equals("DFS")) {
-				// DFSRe(task);
-				BDFS(task, DFS);
+				DFSRe(task);
+//				BDFS(task, DFS);
 			} else if (task.getAlgorithm().equals("UCS")) {
 				UCS(task);
 			} else {
@@ -49,17 +52,30 @@ public class waterFlow {
 	}
 
 	public static void DFSRe(Task task) {
+		Map<String, Boolean> visited = new HashMap<String, Boolean>();
 		Node node = new Node();
 		node.setState(task.getSource());
-		recursiveDFS(node, task);
+		if(!recursiveDFS(node, task, visited)){
+			writeOutput(writer, "None");
+		}
 	}
 
-	public static void recursiveDFS(Node node, Task task) {
+	/**
+	 * 
+	 * @param node
+	 * @param task
+	 * @return true for done
+	 */
+	public static boolean recursiveDFS(Node node, Task task, Map<String, Boolean> visited) {
+		if(visited.containsKey(node.getState())){
+			return false;
+		}
+		visited.put(node.getState(), true);
 		if (task.getDestList().contains(node.getState())) {
 			int outputTime = (node.getCost() + task.getStartTime()) % 24;
 			String line = node.getState() + " " + outputTime;
 			writeOutput(writer, line);
-			return;
+			return true;
 		}
 		List<String> children = new ArrayList<String>();
 		for (Pipe pipe : task.getPipeList()) {
@@ -67,13 +83,21 @@ public class waterFlow {
 				children.add(pipe.getEnd());
 			}
 		}
-		Collections.sort(children);
+		if(children.size()==0){
+			return false;
+		}
+		if(children.size()!=1){
+			Collections.sort(children);
+		}
 		for (String state : children) {
 			Node child = new Node();
 			child.setState(state);
 			child.setCost(node.getCost() + 1);
-			recursiveDFS(child, task);
+			if(recursiveDFS(child, task, visited)){
+				return true;
+			}
 		}
+		return false;
 	}
 
 	public static void UCS(Task task) {
@@ -218,7 +242,7 @@ public class waterFlow {
 			String line = br.readLine();
 			testNum = Integer.parseInt(line);
 			for (int i = 0; i < testNum; i++) {
-				taskList.add(readTask(br, line));
+				taskList.add(readTask(br, line, i));
 				br.readLine();// ignore the empty line between different tasks
 			}
 		} catch (Exception e) {
@@ -230,8 +254,9 @@ public class waterFlow {
 		writer.println(line);
 	}
 
-	public static Task readTask(BufferedReader br, String line) {
+	public static Task readTask(BufferedReader br, String line, int taskNum) {
 		Task task = new Task();
+		task.setTaskNum(taskNum);
 		try {
 			task.setAlgorithm(br.readLine());
 			task.setSource(br.readLine());
