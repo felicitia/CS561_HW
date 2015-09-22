@@ -19,8 +19,8 @@ public class waterFlow {
 	private static List<Task> taskList;
 	private static String input = "/Users/felicitia/Desktop/input_lwl.txt";
 	private static PrintWriter writer = null;
-	private static boolean DFS = true;
-	private static boolean BFS = false;
+	private static short DFS = 1;
+	private static short BFS = 0;
 
 	public static void main(String[] args) {
 
@@ -36,12 +36,11 @@ public class waterFlow {
 		// TODO Auto-generated method stub
 		readInput(input);
 		for (Task task : taskList) {
-//			writeOutput(writer, ""+task.getTaskNum());
 			if (task.getAlgorithm().equals("BFS")) {
 				BDFS(task, BFS);
 			} else if (task.getAlgorithm().equals("DFS")) {
 				DFSRe(task);
-//				BDFS(task, DFS);
+				// BDFS(task, DFS);
 			} else if (task.getAlgorithm().equals("UCS")) {
 				UCS(task);
 			} else {
@@ -55,7 +54,7 @@ public class waterFlow {
 		Map<String, Boolean> visited = new HashMap<String, Boolean>();
 		Node node = new Node();
 		node.setState(task.getSource());
-		if(!recursiveDFS(node, task, visited)){
+		if (!recursiveDFS(node, task, visited)) {
 			writeOutput(writer, "None");
 		}
 	}
@@ -66,8 +65,9 @@ public class waterFlow {
 	 * @param task
 	 * @return true for done
 	 */
-	public static boolean recursiveDFS(Node node, Task task, Map<String, Boolean> visited) {
-		if(visited.containsKey(node.getState())){
+	public static boolean recursiveDFS(Node node, Task task,
+			Map<String, Boolean> visited) {
+		if (visited.containsKey(node.getState())) {
 			return false;
 		}
 		visited.put(node.getState(), true);
@@ -83,17 +83,17 @@ public class waterFlow {
 				children.add(pipe.getEnd());
 			}
 		}
-		if(children.size()==0){
+		if (children.size() == 0) {
 			return false;
 		}
-		if(children.size()!=1){
+		if (children.size() != 1) {
 			Collections.sort(children);
 		}
 		for (String state : children) {
 			Node child = new Node();
 			child.setState(state);
 			child.setCost(node.getCost() + 1);
-			if(recursiveDFS(child, task, visited)){
+			if (recursiveDFS(child, task, visited)) {
 				return true;
 			}
 		}
@@ -150,7 +150,7 @@ public class waterFlow {
 		return;
 	}
 
-	public static void BDFS(Task task, boolean strategy) {
+	public static void BDFS(Task task, short strategy) {
 		Node node = new Node();
 		node.setState(task.getSource());
 		List<String> destList = task.getDestList();
@@ -173,7 +173,13 @@ public class waterFlow {
 					children.add(pipe.getEnd());
 				}
 			}
-			Collections.sort(children); // uppercase will be before lowercase
+			if(children.size()!=1){
+				if(strategy==BFS){
+					Collections.sort(children); // uppercase will be before lowercase
+				}else if(strategy==DFS){
+					Collections.sort(children, Collections.reverseOrder());
+				}
+			}
 			for (String child : children) {
 				if (!(containState(frontier, child) || containState(explored,
 						child))) {
@@ -186,9 +192,9 @@ public class waterFlow {
 					Node currentNode = new Node();
 					currentNode.setState(child);
 					currentNode.setCost(node.getCost() + 1);
-					if (BFS) {
+					if (strategy==BFS) {
 						frontier.addLast(currentNode);
-					} else {
+					} else if(strategy==DFS){
 						frontier.addFirst(currentNode);
 					}
 				}
