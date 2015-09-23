@@ -36,23 +36,39 @@ public class waterFlow {
 		// TODO Auto-generated method stub
 		readInput(input);
 		for (Task task : taskList) {
-			UCS(task);
+			try {
+				UCS(task);
+			} catch (Exception e) {
+
+			}
 			if (task.getAlgorithm().equals("BFS")) {
-				BDFS(task, BFS);
+				try {
+					BDFS(task, BFS);
+				} catch (Exception e) {
+
+				}
 			} else if (task.getAlgorithm().equals("DFS")) {
-				DFSRe(task);
+				try {
+					DFSRe(task);
+				} catch (Exception e) {
+
+				}
 				// BDFS(task, DFS);
 			} else if (task.getAlgorithm().equals("UCS")) {
-				UCS(task);
+				try {
+					UCS(task);
+				} catch (Exception e) {
+
+				}
 			} else {
 				System.out.println("task invalid");
 			}
 		}
 		writer.close();
-		
+
 	}
 
-	public static void DFSRe(Task task) {
+	public static void DFSRe(Task task) throws Exception {
 		Map<String, Boolean> visited = new HashMap<String, Boolean>();
 		Node node = new Node();
 		node.setState(task.getSource());
@@ -102,7 +118,7 @@ public class waterFlow {
 		return false;
 	}
 
-	public static void UCS(Task task) {
+	public static void UCS(Task task) throws Exception {
 		UCSNode node = new UCSNode();
 		node.setState(task.getSource());
 		List<String> destList = task.getDestList();
@@ -137,15 +153,16 @@ public class waterFlow {
 						}
 					} else if (!checkOff(child,
 							task.getStartTime() + node.getCost())) {
-						try{
-						for (UCSNode tmp : frontier) {
-							if (tmp.getState().equals(child.getState())
-									&& tmp.getCost() > child.getCost()) {
-								frontier.remove(tmp);
-								frontier.add(child);
-								break;
+						try {
+							for (UCSNode tmp : frontier) {
+								if (tmp.getState().equals(child.getState())
+										&& tmp.getCost() > child.getCost()) {
+									frontier.remove(tmp);
+									frontier.add(child);
+									break;
+								}
 							}
-						}}catch (Exception e){
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 					}
@@ -156,7 +173,7 @@ public class waterFlow {
 		return;
 	}
 
-	public static void BDFS(Task task, short strategy) {
+	public static void BDFS(Task task, short strategy) throws Exception {
 		Node node = new Node();
 		node.setState(task.getSource());
 		List<String> destList = task.getDestList();
@@ -179,10 +196,11 @@ public class waterFlow {
 					children.add(pipe.getEnd());
 				}
 			}
-			if(children.size()!=1){
-				if(strategy==BFS){
-					Collections.sort(children); // uppercase will be before lowercase
-				}else if(strategy==DFS){
+			if (children.size() != 1) {
+				if (strategy == BFS) {
+					Collections.sort(children); // uppercase will be before
+												// lowercase
+				} else if (strategy == DFS) {
 					Collections.sort(children, Collections.reverseOrder());
 				}
 			}
@@ -198,9 +216,9 @@ public class waterFlow {
 					Node currentNode = new Node();
 					currentNode.setState(child);
 					currentNode.setCost(node.getCost() + 1);
-					if (strategy==BFS) {
+					if (strategy == BFS) {
 						frontier.addLast(currentNode);
-					} else if(strategy==DFS){
+					} else if (strategy == DFS) {
 						frontier.addFirst(currentNode);
 					}
 				}
