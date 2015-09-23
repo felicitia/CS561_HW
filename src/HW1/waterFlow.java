@@ -17,7 +17,7 @@ import java.util.PriorityQueue;
 public class waterFlow {
 	private static int testNum;
 	private static List<Task> taskList;
-	private static String input = "/Users/felicitia/Desktop/input_lwl.txt";
+	private static String input = "/Users/felicitia/Desktop/lastCases.txt";
 	private static PrintWriter writer = null;
 	private static short DFS = 1;
 	private static short BFS = 0;
@@ -25,7 +25,7 @@ public class waterFlow {
 	public static void main(String[] args) {
 
 		try {
-			writer = new PrintWriter("output.txt", "UTF-8");
+			writer = new PrintWriter("lastCases_UCS.txt", "UTF-8");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -36,6 +36,7 @@ public class waterFlow {
 		// TODO Auto-generated method stub
 		readInput(input);
 		for (Task task : taskList) {
+			UCS(task);
 			if (task.getAlgorithm().equals("BFS")) {
 				BDFS(task, BFS);
 			} else if (task.getAlgorithm().equals("DFS")) {
@@ -48,6 +49,7 @@ public class waterFlow {
 			}
 		}
 		writer.close();
+		
 	}
 
 	public static void DFSRe(Task task) {
@@ -135,12 +137,16 @@ public class waterFlow {
 						}
 					} else if (!checkOff(child,
 							task.getStartTime() + node.getCost())) {
+						try{
 						for (UCSNode tmp : frontier) {
 							if (tmp.getState().equals(child.getState())
 									&& tmp.getCost() > child.getCost()) {
 								frontier.remove(tmp);
 								frontier.add(child);
+								break;
 							}
+						}}catch (Exception e){
+							e.printStackTrace();
 						}
 					}
 				}
