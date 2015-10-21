@@ -25,7 +25,7 @@ public class waterFlow {
 	public static void main(String[] args) {
 
 		try {
-			writer = new PrintWriter("lastCases_UCS.txt", "UTF-8");
+			writer = new PrintWriter("output.txt", "UTF-8");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -36,11 +36,6 @@ public class waterFlow {
 		// TODO Auto-generated method stub
 		readInput(input);
 		for (Task task : taskList) {
-			try {
-				UCS(task);
-			} catch (Exception e) {
-
-			}
 			if (task.getAlgorithm().equals("BFS")) {
 				try {
 					BDFS(task, BFS);
