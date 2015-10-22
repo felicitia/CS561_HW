@@ -1,6 +1,7 @@
 package HW2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -23,9 +24,11 @@ public class State {
 		// TODO Auto-generated constructor stub
 		continueMove = false;
 	}
-	public State(int N) {
-		state1 = new int[N];
-		state2 = new int[N];
+	public State(int N, State state) {
+		state1 = Arrays.copyOf(state.state1, N);
+		state2 = Arrays.copyOf(state.state2, N);
+		stone1 = state.stone1;
+		stone2 = state.stone2;
 		continueMove = false;
 	}
 	
