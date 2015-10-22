@@ -11,7 +11,7 @@ import java.util.List;
 
 public class mancala {
 
-	static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_2.txt";
+	 static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_4.txt";
 //	static String input = "/Users/felicitia/Desktop/hw2_test/input1.txt";
 	static int taskNo;
 	static int player;
@@ -23,6 +23,7 @@ public class mancala {
 	static short A = 0;
 	static short B = 1;
 	static int lineNum = 0;
+	static State next_state;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -74,7 +75,7 @@ public class mancala {
 
 	}
 
-	public static void printState(State state, String caller) {
+	public static void printLog(State state, String caller) {
 		lineNum++;
 		String value = "" + state.value;
 		if (state.value == Integer.MAX_VALUE) {
@@ -83,45 +84,45 @@ public class mancala {
 		if (state.value == Integer.MIN_VALUE) {
 			value = "-Infinity";
 		}
-		if(lineNum == 33){
-			System.out.println("caller = " + caller);
-			printBoard(state, value);
+		if (lineNum == 33) {
+			// System.out.println("caller = " + caller);
+			// printBoard(state, value);
 		}
 		logWriter.println(state.node + "," + state.depth + "," + value);
 	}
 
-	public static void printBoard(State state, String value){
+	public static void printBoard(State state, String value) {
 		System.out.println(state.node + "," + state.depth + "," + value);
-		System.out.println("continue?\t"+state.continueMove);
+		System.out.println("continue?\t" + state.continueMove);
 		System.out.println("state:");
-		for(int tmp: state.state2){
-			System.out.print(tmp+"\t");
+		for (int tmp : state.state2) {
+			System.out.print(tmp + "\t");
 		}
 		System.out.println();
-		for(int tmp: state.state1){
-			System.out.print(tmp+"\t");
+		for (int tmp : state.state1) {
+			System.out.print(tmp + "\t");
 		}
 		System.out.println();
-		System.out.println("stone1 = "+state.stone1);
-		System.out.println("stone2 = "+state.stone2);
+		System.out.println("stone1 = " + state.stone1);
+		System.out.println("stone2 = " + state.stone2);
 	}
-	
+
 	public static int maxValue(State state) {
-		if(whoEndGame(state).equals("A")){
+		if (whoEndGame(state).equals("A")) {
 			return endGame(state, A);
 		}
-		if(whoEndGame(state).equals("B")){
+		if (whoEndGame(state).equals("B")) {
 			return endGame(state, B);
 		}
 		if (state.depth == cutDepth) {
 			if (!state.continueMove) {
 				int eval = evaluation(state);
 				state.value = eval;
-				printState(state, "MAX");
+				printLog(state, "MAX");
 				return eval;
 			}
 		}
-		printState(state, "MAX");
+		printLog(state, "MAX");
 		int value = Integer.MIN_VALUE;
 		if (1 == player) {
 			// traverse B2, B3, ...
@@ -141,13 +142,27 @@ public class mancala {
 				updateNextState(state, nextState, number, traverseIndex, B);
 				if (nextState.continueMove) {
 					nextState.value = Integer.MIN_VALUE;
-					value = Math.max(value, maxValue(nextState));
+					int tmp = maxValue(nextState);
+					if (value < tmp) {
+						value = tmp;
+						if(1 == nextState.depth && !nextState.continueMove){
+							next_state = nextState;
+						}
+					}
+					// value = Math.max(value, maxValue(nextState));
 				} else {
 					nextState.value = Integer.MAX_VALUE;
-					value = Math.max(value, minValue(nextState));
+					int tmp = minValue(nextState);
+					if (value < tmp) {
+						value = tmp;
+						if(1 == nextState.depth && !nextState.continueMove){
+							next_state = nextState;
+						}
+					}
+					// value = Math.max(value, minValue(nextState));
 				}
 				state.value = value;
-				printState(state, "MAX");
+				printLog(state, "MAX");
 			}
 		} else {
 			// traverse A2, A3, ...
@@ -167,42 +182,56 @@ public class mancala {
 				updateNextState(state, nextState, number, traverseIndex, A);
 				if (nextState.continueMove) {
 					nextState.value = Integer.MIN_VALUE;
-					value = Math.max(value, maxValue(nextState));
+					int tmp = maxValue(nextState);
+					if (value < tmp) {
+						value = tmp;
+						if(1 == nextState.depth && !nextState.continueMove){
+							next_state = nextState;
+						}
+					}
+					// value = Math.max(value, maxValue(nextState));
 				} else {
 					nextState.value = Integer.MAX_VALUE;
-					value = Math.max(value, minValue(nextState));
+					int tmp = minValue(nextState);
+					if (value < tmp) {
+						value = tmp;
+						if(1 == nextState.depth && !nextState.continueMove){
+							next_state = nextState;
+						}
+					}
+					// value = Math.max(value, minValue(nextState));
 				}
 				state.value = value;
-				printState(state, "MAX");
+				printLog(state, "MAX");
 			}
 		}
 		return value;
 	}
 
-	public static String whoEndGame(State state){
+	public static String whoEndGame(State state) {
 		// check state 1
 		int invalidMove = 0;
-		for(int i=0; i<N; i++){
-			if(state.state1[i] == 0){
+		for (int i = 0; i < N; i++) {
+			if (state.state1[i] == 0) {
 				invalidMove++;
 			}
 		}
-		if(invalidMove == N){
+		if (invalidMove == N) {
 			return "B";
 		}
-		//check state 2
+		// check state 2
 		invalidMove = 0;
-		for(int i=0; i<N; i++){
-			if(state.state2[i] == 0){
+		for (int i = 0; i < N; i++) {
+			if (state.state2[i] == 0) {
 				invalidMove++;
 			}
 		}
-		if(invalidMove == N){
+		if (invalidMove == N) {
 			return "A";
 		}
 		return "None";
 	}
-	
+
 	public static int endGame(State state, int AorB) {
 		int total = 0;
 		if (AorB == A) {
@@ -211,7 +240,7 @@ public class mancala {
 			}
 			state.stone1 += total;
 			state.value = evaluation(state);
-			printState(state, "END");
+			printLog(state, "END");
 			return state.value;
 		} else {
 			for (int i = 0; i < N; i++) {
@@ -219,7 +248,7 @@ public class mancala {
 			}
 			state.stone2 += total;
 			state.value = evaluation(state);
-			printState(state, "END");
+			printLog(state, "END");
 			return state.value;
 		}
 	}
@@ -261,7 +290,7 @@ public class mancala {
 					if (idx == N) {
 						nextState.stone1++;
 					}
-					//opponent's mancala, skip 
+					// opponent's mancala, skip
 					else if (idx == (2 * (N + 1) - 1)) {
 						number++;
 					} else if (idx < N) {
@@ -294,7 +323,7 @@ public class mancala {
 				}
 				if (idx < 0) {
 					idx = Math.floorMod(idx, (2 * (N + 1)));
-					//oponent's mancala, skip
+					// oponent's mancala, skip
 					if (idx == N) {
 						number++;
 					} else if (idx == (2 * (N + 1) - 1)) {
@@ -315,21 +344,21 @@ public class mancala {
 	}
 
 	public static int minValue(State state) {
-		if(whoEndGame(state).equals("A")){
+		if (whoEndGame(state).equals("A")) {
 			return endGame(state, A);
 		}
-		if(whoEndGame(state).equals("B")){
+		if (whoEndGame(state).equals("B")) {
 			return endGame(state, B);
 		}
 		if (state.depth == cutDepth) {
 			if (!state.continueMove) {
 				int eval = evaluation(state);
 				state.value = eval;
-				printState(state, "MIN");
+				printLog(state, "MIN");
 				return eval;
 			}
 		}
-		printState(state, "MIN");
+		printLog(state, "MIN");
 		int value = Integer.MAX_VALUE;
 		if (2 == player) {
 			// traverse B2, B3, ...
@@ -349,15 +378,29 @@ public class mancala {
 				updateNextState(state, nextState, number, traverseIndex, B);
 				if (nextState.continueMove) {
 					nextState.value = Integer.MAX_VALUE;
-					value = Math.min(value, minValue(nextState));
+					int tmp = minValue(nextState);
+					if (value > tmp) {
+						value = tmp;
+						if(1 == nextState.depth && !nextState.continueMove){
+							next_state = nextState;
+						}
+					}
+					// value = Math.min(value, minValue(nextState));
 				} else {
 					nextState.value = Integer.MIN_VALUE;
-					value = Math.min(value, maxValue(nextState));
+					int tmp = maxValue(nextState);
+					if (value > tmp) {
+						value = tmp;
+						if(1 == nextState.depth && !nextState.continueMove){
+							next_state = nextState;
+						}
+					}
+					// value = Math.min(value, maxValue(nextState));
 				}
 				state.value = value;
-				printState(state, "MIN");
+				printLog(state, "MIN");
 			}
-		
+
 		} else {
 			// traverse A2, A3, ...
 			for (int traverseIndex = 0; traverseIndex < N; traverseIndex++) {
@@ -376,25 +419,56 @@ public class mancala {
 				updateNextState(state, nextState, number, traverseIndex, A);
 				if (nextState.continueMove) {
 					nextState.value = Integer.MAX_VALUE;
-					value = Math.min(value, minValue(nextState));
+					int tmp = minValue(nextState);
+					if (value > tmp) {
+						value = tmp;
+						if(1 == nextState.depth && !nextState.continueMove){
+							next_state = nextState;
+						}
+					}
+					// value = Math.min(value, minValue(nextState));
 				} else {
 					nextState.value = Integer.MIN_VALUE;
-					value = Math.min(value, maxValue(nextState));
+					int tmp = maxValue(nextState);
+					if (value > tmp) {
+						value = tmp;
+						if(1 == nextState.depth && !nextState.continueMove){
+							next_state = nextState;
+						}
+					}
+					// value = Math.min(value, maxValue(nextState));
 				}
 				state.value = value;
-				printState(state, "MIN");
+				printLog(state, "MIN");
 			}
-			
+
 		}
 		return value;
 	}
 
 	public static void miniMax() {
 		maxValue(initialState);
+		printNextState();
 	}
 
 	public static void alphaBeta() {
 
+	}
+
+	public static void printNextState() {
+		System.out.println(next_state.node+" "+next_state.depth);
+		//print state 2
+		for (int i = 0; i < N-1; i++) {
+			stateWriter.print(next_state.state2[i] + " ");
+		}
+		stateWriter.println(next_state.state2[N-1]);
+		//print state 1
+		for(int i=0; i<N-1; i++){
+			stateWriter.print(next_state.state1[i]+" ");
+		}
+		stateWriter.println(next_state.state1[N-1]);
+		stateWriter.println(next_state.stone2);
+		stateWriter.println(next_state.stone1);
 	}
 
 	public static int evaluation(State state) {
