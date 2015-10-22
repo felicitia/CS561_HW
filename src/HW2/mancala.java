@@ -11,7 +11,7 @@ import java.util.List;
 
 public class mancala {
 
-	static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_2.txt";
+	static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_4.txt";
 	static int taskNo;
 	static int player;
 	static int cutDepth;
@@ -214,8 +214,10 @@ public class mancala {
 					idx = Math.floorMod(idx, (2 * (N + 1)));
 					if (idx == N) {
 						nextState.stone1++;
-					} else if (idx == (2 * (N + 1) - 1)) {
-						nextState.stone2++;
+					}
+					//opponent's mancala, skip 
+					else if (idx == (2 * (N + 1) - 1)) {
+						number++;
 					} else if (idx < N) {
 						nextState.state1[idx]++;
 					} else {
@@ -246,8 +248,9 @@ public class mancala {
 				}
 				if (idx < 0) {
 					idx = Math.floorMod(idx, (2 * (N + 1)));
+					//oponent's mancala, skip
 					if (idx == N) {
-						nextState.stone1++;
+						number++;
 					} else if (idx == (2 * (N + 1) - 1)) {
 						nextState.stone2++;
 					} else if (idx < N) {
