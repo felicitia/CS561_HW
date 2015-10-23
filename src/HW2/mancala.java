@@ -11,8 +11,8 @@ import java.util.List;
 
 public class mancala {
 
-//	static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_4.txt";
-	 static String input = "/Users/felicitia/Desktop/hw2_test/input3.txt";
+	static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_1.txt";
+//	 static String input = "/Users/felicitia/Desktop/hw2_test/input3.txt";
 	static int taskNo;
 	static int player;
 	static int cutDepth;
@@ -20,31 +20,25 @@ public class mancala {
 	static PrintWriter logWriter = null;
 	static int N;
 	static State initialState = null;
+	static ABState initialABState = null;
 	static short A = 0;
 	static short B = 1;
 	static int lineNum = 0;
-//	static State nextMove = null;
 	static int rootMax = Integer.MIN_VALUE;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		initialState = new State();
+		initialABState = new ABState();
 		initialState.depth = 0;
+		initialABState.depth = 0;
 		initialState.node = "root";
+		initialABState.node = "root";
 		initialState.value = Integer.MIN_VALUE;
+		initialABState.value = Integer.MIN_VALUE;
+		initialABState.alpha = Integer.MIN_VALUE;
+		initialABState.beta = Integer.MAX_VALUE;
 		readInput(input);
-		if (taskNo != 1) {
-			try {
-				logWriter = new PrintWriter("traverse_log.txt", "UTF-8");
-				logWriter.println("Node,Depth,Value");
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		try {
 			stateWriter = new PrintWriter("next_state.txt", "UTF-8");
 		} catch (FileNotFoundException e) {
@@ -60,9 +54,29 @@ public class mancala {
 			greedy();
 			break;
 		case 2:
+			try {
+				logWriter = new PrintWriter("traverse_log.txt", "UTF-8");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			logWriter.println("Node,Depth,Value");
 			miniMax();
 			break;
 		case 3:
+			try {
+				logWriter = new PrintWriter("traverse_log.txt", "UTF-8");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			logWriter.println("Node,Depth,Value,Alpha,Beta");
 			alphaBeta();
 			break;
 		}
@@ -78,9 +92,36 @@ public class mancala {
 		printNextState();
 	}
 
-	public static void printLog(State state, String caller) {
+	public static void printABLog(ABState state) {
+		lineNum++;
+		String value = "" + state.value;
+		String alpha = "" + state.alpha;
+		String beta = "" + state.beta;
+		if (state.value == Integer.MAX_VALUE) {
+			value = "Infinity";
+		}
+		if (state.value == Integer.MIN_VALUE) {
+			value = "-Infinity";
+		}
+		if (state.alpha == Integer.MAX_VALUE) {
+			alpha = "Infinity";
+		}
+		if (state.alpha == Integer.MIN_VALUE) {
+			alpha = "-Infinity";
+		}
+		if (state.beta == Integer.MAX_VALUE) {
+			beta = "Infinity";
+		}
+		if (state.beta == Integer.MIN_VALUE) {
+			beta = "-Infinity";
+		}
+		logWriter.println(state.node + "," + state.depth + "," + value + ","
+				+ alpha + "," + beta);
+	}
+
+	public static void printMiniMaxLog(State state, String caller) {
 		// ignore greedy
-		if(1 == taskNo){
+		if (1 == taskNo) {
 			return;
 		}
 		lineNum++;
@@ -90,10 +131,6 @@ public class mancala {
 		}
 		if (state.value == Integer.MIN_VALUE) {
 			value = "-Infinity";
-		}
-		if (lineNum == 33) {
-			// System.out.println("caller = " + caller);
-			// printBoard(state, value);
 		}
 		logWriter.println(state.node + "," + state.depth + "," + value);
 	}
@@ -125,14 +162,14 @@ public class mancala {
 			if (!state.continueMove) {
 				int eval = evaluation(state);
 				state.value = eval;
-				printLog(state, "MAX");
-//				if(eval > rootMax){
-//					updateNextMove(N, state, eval);
-//				}
+				printMiniMaxLog(state, "MAX");
+				// if(eval > rootMax){
+				// updateNextMove(N, state, eval);
+				// }
 				return eval;
 			}
 		}
-		printLog(state, "MAX");
+		printMiniMaxLog(state, "MAX");
 		int value = Integer.MIN_VALUE;
 		if (1 == player) {
 			// traverse B2, B3, ...
@@ -157,10 +194,10 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
-//					 value = Math.max(value, maxValue(nextState));
-//					 if(value > rootMax){
-//						 updateNextMove(N, state, value);
-//					 }
+					// value = Math.max(value, maxValue(nextState));
+					// if(value > rootMax){
+					// updateNextMove(N, state, value);
+					// }
 				} else {
 					nextState.value = Integer.MAX_VALUE;
 					int tmp = minValue(nextState);
@@ -168,19 +205,19 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
-//					 value = Math.max(value, minValue(nextState));
-//					 if(value > rootMax){
-//						 updateNextMove(N, state, value);
-//					 }
+					// value = Math.max(value, minValue(nextState));
+					// if(value > rootMax){
+					// updateNextMove(N, state, value);
+					// }
 				}
 				state.value = value;
-				printLog(state, "MAX");
-//				if(value > rootMax){
-//					updateNextMove(N, state, value);
-//				}
-//				if(state == initialState && rootMax < value){
-//					rootMax = value;
-//				}
+				printMiniMaxLog(state, "MAX");
+				// if(value > rootMax){
+				// updateNextMove(N, state, value);
+				// }
+				// if(state == initialState && rootMax < value){
+				// rootMax = value;
+				// }
 			}
 		} else {
 			// traverse A2, A3, ...
@@ -205,10 +242,10 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
-//					 value = Math.max(value, maxValue(nextState));
-//					 if(value > rootMax){
-//						 updateNextMove(N, state, value);
-//					 }
+					// value = Math.max(value, maxValue(nextState));
+					// if(value > rootMax){
+					// updateNextMove(N, state, value);
+					// }
 				} else {
 					nextState.value = Integer.MAX_VALUE;
 					int tmp = minValue(nextState);
@@ -216,19 +253,19 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
-//					 value = Math.max(value, minValue(nextState));
-//					 if(value > rootMax){
-//						 updateNextMove(N, state, value);
-//					 }
+					// value = Math.max(value, minValue(nextState));
+					// if(value > rootMax){
+					// updateNextMove(N, state, value);
+					// }
 				}
 				state.value = value;
-				printLog(state, "MAX");
-//				if(value > rootMax){
-//					updateNextMove(N, state, value);
-//				}
-//				if(state == initialState && rootMax < value){
-//					rootMax = value;
-//				}
+				printMiniMaxLog(state, "MAX");
+				// if(value > rootMax){
+				// updateNextMove(N, state, value);
+				// }
+				// if(state == initialState && rootMax < value){
+				// rootMax = value;
+				// }
 			}
 		}
 		return value;
@@ -258,15 +295,15 @@ public class mancala {
 		return "None";
 	}
 
-//	public static void updateNextMove(int N, State nextState, int eval) {
-//		System.out.println("rootMax = "+ rootMax);
-//		System.out.println("next move? "+nextState.node+" "+nextState.depth);
-//		if (1 == nextState.depth && !nextState.continueMove) {
-//			System.out.println("next move: "+nextState.node+"\t"+nextState.value);
-//			nextMove = State.copyState(N, nextState);
-//			rootMax = eval;
-//		}
-//	}
+	// public static void updateNextMove(int N, State nextState, int eval) {
+	// System.out.println("rootMax = "+ rootMax);
+	// System.out.println("next move? "+nextState.node+" "+nextState.depth);
+	// if (1 == nextState.depth && !nextState.continueMove) {
+	// System.out.println("next move: "+nextState.node+"\t"+nextState.value);
+	// nextMove = State.copyState(N, nextState);
+	// rootMax = eval;
+	// }
+	// }
 
 	public static int endGame(State state, int AorB) {
 		int total = 0;
@@ -276,10 +313,11 @@ public class mancala {
 			}
 			state.stone1 += total;
 			state.value = evaluation(state);
-			printLog(state, "END");
-//			if(state.value > rootMax){
-//				updateNextMove(N, state, state.value);
-//			}
+			if (state instanceof ABState) {
+				printABLog((ABState) state);
+			} else if (state instanceof State) {
+				printMiniMaxLog(state, "END");
+			}
 			return state.value;
 		} else {
 			for (int i = 0; i < N; i++) {
@@ -287,10 +325,11 @@ public class mancala {
 			}
 			state.stone2 += total;
 			state.value = evaluation(state);
-			printLog(state, "END");
-//			if(state.value > rootMax){
-//				updateNextMove(N, state, state.value);
-//			}
+			if (state instanceof ABState) {
+				printABLog((ABState) state);
+			} else if (state instanceof State) {
+				printMiniMaxLog(state, "END");
+			}
 			return state.value;
 		}
 	}
@@ -396,14 +435,14 @@ public class mancala {
 			if (!state.continueMove) {
 				int eval = evaluation(state);
 				state.value = eval;
-				printLog(state, "MIN");
-//				if(eval > rootMax){
-//					updateNextMove(N, state, eval);
-//				}
+				printMiniMaxLog(state, "MIN");
+				// if(eval > rootMax){
+				// updateNextMove(N, state, eval);
+				// }
 				return eval;
 			}
 		}
-		printLog(state, "MIN");
+		printMiniMaxLog(state, "MIN");
 		int value = Integer.MAX_VALUE;
 		if (2 == player) {
 			// traverse B2, B3, ...
@@ -428,10 +467,10 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
-//					 value = Math.min(value, minValue(nextState));
-//					 if(value > rootMax){
-//						 updateNextMove(N, state, value);
-//					 }
+					// value = Math.min(value, minValue(nextState));
+					// if(value > rootMax){
+					// updateNextMove(N, state, value);
+					// }
 				} else {
 					nextState.value = Integer.MIN_VALUE;
 					int tmp = maxValue(nextState);
@@ -439,16 +478,16 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
-//					 value = Math.min(value, maxValue(nextState));
-//					 if(value > rootMax){
-//						 updateNextMove(N, state, value);
-//					 }
+					// value = Math.min(value, maxValue(nextState));
+					// if(value > rootMax){
+					// updateNextMove(N, state, value);
+					// }
 				}
 				state.value = value;
-				printLog(state, "MIN");
-//				if(value > rootMax){
-//					updateNextMove(N, state, value);
-//				}
+				printMiniMaxLog(state, "MIN");
+				// if(value > rootMax){
+				// updateNextMove(N, state, value);
+				// }
 			}
 
 		} else {
@@ -474,10 +513,10 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
-//					 value = Math.min(value, minValue(nextState));
-//					 if(value > rootMax){
-//						 updateNextMove(N, state, value);
-//					 }
+					// value = Math.min(value, minValue(nextState));
+					// if(value > rootMax){
+					// updateNextMove(N, state, value);
+					// }
 				} else {
 					nextState.value = Integer.MIN_VALUE;
 					int tmp = maxValue(nextState);
@@ -485,16 +524,16 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
-//					 value = Math.min(value, maxValue(nextState));
-//					 if(value > rootMax){
-//						 updateNextMove(N, state, value);
-//					 }
+					// value = Math.min(value, maxValue(nextState));
+					// if(value > rootMax){
+					// updateNextMove(N, state, value);
+					// }
 				}
 				state.value = value;
-				printLog(state, "MIN");
-//				if(value > rootMax){
-//					updateNextMove(N, state, value);
-//				}
+				printMiniMaxLog(state, "MIN");
+				// if(value > rootMax){
+				// updateNextMove(N, state, value);
+				// }
 			}
 
 		}
@@ -507,12 +546,18 @@ public class mancala {
 	}
 
 	public static void alphaBeta() {
-
+		maxValue(initialABState, Integer.MIN_VALUE, Integer.MAX_VALUE);
+		printNextState();
 	}
 
 	public static void printNextState() {
-		State nextMove = initialState.child;
-		while(nextMove.depth == 1 && nextMove.continueMove){
+		State nextMove = null;
+		if (taskNo == 3) {
+			nextMove = initialABState.child;
+		} else {
+			nextMove = initialState.child;
+		}
+		while (nextMove.depth == 1 && nextMove.continueMove) {
 			nextMove = nextMove.child;
 		}
 		// print state 2
@@ -544,21 +589,241 @@ public class mancala {
 			cutDepth = Integer.parseInt(br.readLine());
 			String[] tmp = br.readLine().split(" ");
 			N = tmp.length;
-			initialState.state1 = new int[N];
-			initialState.state2 = new int[N];
+			if (taskNo == 3) {
+				initialABState.state1 = new int[N];
+				initialABState.state2 = new int[N];
+			} else {
+				initialState.state1 = new int[N];
+				initialState.state2 = new int[N];
+			}
 			for (int i = 0; i < N; i++) {
-				initialState.state2[i] = Integer.parseInt(tmp[i]);
+				if (taskNo == 3) {
+					initialABState.state2[i] = Integer.parseInt(tmp[i]);
+				} else {
+					initialState.state2[i] = Integer.parseInt(tmp[i]);
+				}
 			}
 			tmp = br.readLine().split(" ");
 			for (int i = 0; i < N; i++) {
-				initialState.state1[i] = Integer.parseInt(tmp[i]);
+				if (taskNo == 3) {
+					initialABState.state1[i] = Integer.parseInt(tmp[i]);
+				} else {
+					initialState.state1[i] = Integer.parseInt(tmp[i]);
+				}
 			}
-			initialState.stone2 = Integer.parseInt(br.readLine());
-			initialState.stone1 = Integer.parseInt(br.readLine());
+			if (taskNo == 3) {
+				initialABState.stone2 = Integer.parseInt(br.readLine());
+				initialABState.stone1 = Integer.parseInt(br.readLine());
+			} else {
+				initialState.stone2 = Integer.parseInt(br.readLine());
+				initialState.stone1 = Integer.parseInt(br.readLine());
+			}
 			br.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
 
+	public static int maxValue(ABState state, int alpha, int beta) {
+		if (whoEndGame(state).equals("A")) {
+			return endGame(state, A);
+		}
+		if (whoEndGame(state).equals("B")) {
+			return endGame(state, B);
+		}
+		if (state.depth == cutDepth) {
+			if (!state.continueMove) {
+				int eval = evaluation(state);
+				state.value = eval;
+				printABLog(state);
+				return eval;
+			}
+		}
+		printABLog(state);
+		int value = Integer.MIN_VALUE;
+		if (1 == player) {
+			// traverse B2, B3, ...
+			for (int traverseIndex = 0; traverseIndex < N; traverseIndex++) {
+				int number = state.state1[traverseIndex];
+				if (0 == number) {
+					continue;
+				}
+				ABState nextState = new ABState(N, state);
+				nextState.node = "B" + (2 + traverseIndex);
+				if (state.continueMove) {
+					nextState.depth = state.depth;
+				} else {
+					nextState.depth = state.depth + 1;
+				}
+				nextState.state1[traverseIndex] = 0;
+				updateNextState(state, nextState, number, traverseIndex, B);
+				if (nextState.continueMove) {
+					nextState.value = Integer.MIN_VALUE;
+					int tmp = maxValue(nextState, state.alpha, state.beta);
+					if (value < tmp) {
+						value = tmp;
+						state.child = nextState;
+					}
+				} else {
+					nextState.value = Integer.MAX_VALUE;
+					int tmp = minValue(nextState, alpha, beta);
+					if (value < tmp) {
+						value = tmp;
+						state.child = nextState;
+					}
+				}
+				state.value = value;
+				if (value >= beta) {
+					printABLog(state);
+					return value;
+				}
+				alpha = Math.max(alpha, value);
+				state.alpha = alpha;
+				printABLog(state);
+			}
+		} else {
+			// traverse A2, A3, ...
+			for (int traverseIndex = 0; traverseIndex < N; traverseIndex++) {
+				int number = state.state2[traverseIndex];
+				if (0 == number) {
+					continue;
+				}
+				ABState nextState = new ABState(N, state);
+				nextState.node = "A" + (2 + traverseIndex);
+				if (state.continueMove) {
+					nextState.depth = state.depth;
+				} else {
+					nextState.depth = state.depth + 1;
+				}
+				nextState.state2[traverseIndex] = 0;
+				updateNextState(state, nextState, number, traverseIndex, A);
+				if (nextState.continueMove) {
+					nextState.value = Integer.MIN_VALUE;
+					int tmp = maxValue(nextState, state.alpha, state.beta);
+					if (value < tmp) {
+						value = tmp;
+						state.child = nextState;
+					}
+				} else {
+					nextState.value = Integer.MAX_VALUE;
+					int tmp = minValue(nextState, alpha, beta);
+					if (value < tmp) {
+						value = tmp;
+						state.child = nextState;
+					}
+				}
+				state.value = value;
+				if (value >= beta) {
+					printABLog(state);
+					return value;
+				}
+				alpha = Math.max(alpha, value);
+				state.alpha = alpha;
+				printABLog(state);
+			}
+		}
+		return value;
+	}
+
+	public static int minValue(ABState state, int alpha, int beta) {
+		if (whoEndGame(state).equals("A")) {
+			return endGame((ABState)state, A);
+		}
+		if (whoEndGame(state).equals("B")) {
+			return endGame((ABState)state, B);
+		}
+		if (state.depth == cutDepth) {
+			if (!state.continueMove) {
+				int eval = evaluation(state);
+				state.value = eval;
+				printABLog(state);
+				return eval;
+			}
+		}
+		printABLog(state);
+		int value = Integer.MAX_VALUE;
+		if (2 == player) {
+			// traverse B2, B3, ...
+			for (int traverseIndex = 0; traverseIndex < N; traverseIndex++) {
+				int number = state.state1[traverseIndex];
+				if (0 == number) {
+					continue;
+				}
+				ABState nextState = new ABState(N, state);
+				nextState.node = "B" + (2 + traverseIndex);
+				if (state.continueMove) {
+					nextState.depth = state.depth;
+				} else {
+					nextState.depth = state.depth + 1;
+				}
+				nextState.state1[traverseIndex] = 0;
+				updateNextState(state, nextState, number, traverseIndex, B);
+				if (nextState.continueMove) {
+					nextState.value = Integer.MAX_VALUE;
+					int tmp = minValue(nextState, alpha, beta);
+					if (value > tmp) {
+						value = tmp;
+						state.child = nextState;
+					}
+				} else {
+					nextState.value = Integer.MIN_VALUE;
+					int tmp = maxValue(nextState, state.alpha, state.beta);
+					if (value > tmp) {
+						value = tmp;
+						state.child = nextState;
+					}
+				}
+				state.value = value;
+				if (value <= alpha) {
+					printABLog(state);
+					return value;
+				}
+				beta = Math.min(value, beta);
+				state.beta = beta;
+				printABLog(state);
+			}
+		} else {
+			// traverse A2, A3, ...
+			for (int traverseIndex = 0; traverseIndex < N; traverseIndex++) {
+				int number = state.state2[traverseIndex];
+				if (0 == number) {
+					continue;
+				}
+				ABState nextState = new ABState(N, state);
+				nextState.node = "A" + (2 + traverseIndex);
+				if (state.continueMove) {
+					nextState.depth = state.depth;
+				} else {
+					nextState.depth = state.depth + 1;
+				}
+				nextState.state2[traverseIndex] = 0;
+				updateNextState(state, nextState, number, traverseIndex, A);
+				if (nextState.continueMove) {
+					nextState.value = Integer.MAX_VALUE;
+					int tmp = minValue(nextState, alpha, beta);
+					if (value > tmp) {
+						value = tmp;
+						state.child = nextState;
+					}
+				} else {
+					nextState.value = Integer.MIN_VALUE;
+					int tmp = maxValue(nextState, state.alpha, state.beta);
+					if (value > tmp) {
+						value = tmp;
+						state.child = nextState;
+					}
+				}
+				state.value = value;
+				if (value <= alpha) {
+					printABLog(state);
+					return value;
+				}
+				beta = Math.min(value, beta);
+				state.beta = beta;
+				printABLog(state);
+			}
+
+		}
+		return value;
 	}
 }
