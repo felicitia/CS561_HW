@@ -11,8 +11,9 @@ import java.util.List;
 
 public class mancala {
 
-	static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_1.txt";
-//	 static String input = "/Users/felicitia/Desktop/hw2_test/input3.txt";
+	// static String input =
+	// "/Users/felicitia/Documents/semester_3/561/HW2/input_1.txt";
+	static String input = "/Users/felicitia/Desktop/HW2_Test/input/input_7.txt";
 	static int taskNo;
 	static int player;
 	static int cutDepth;
@@ -84,6 +85,7 @@ public class mancala {
 			logWriter.close();
 		}
 		stateWriter.close();
+		System.out.println("Done!");
 	}
 
 	public static void greedy() {
@@ -125,6 +127,7 @@ public class mancala {
 			return;
 		}
 		lineNum++;
+
 		String value = "" + state.value;
 		if (state.value == Integer.MAX_VALUE) {
 			value = "Infinity";
@@ -133,6 +136,10 @@ public class mancala {
 			value = "-Infinity";
 		}
 		logWriter.println(state.node + "," + state.depth + "," + value);
+//		if(lineNum >= 382 && lineNum <= 395){
+//			System.out.println(state.node + "," + state.depth + "," + value + ","+state.continueMove);
+//			printBoard(state, value);
+//		}
 	}
 
 	public static void printBoard(State state, String value) {
@@ -310,6 +317,7 @@ public class mancala {
 		if (AorB == A) {
 			for (int i = 0; i < N; i++) {
 				total += state.state1[i];
+				state.state1[i] = 0;
 			}
 			state.stone1 += total;
 			state.value = evaluation(state);
@@ -322,6 +330,7 @@ public class mancala {
 		} else {
 			for (int i = 0; i < N; i++) {
 				total += state.state2[i];
+				state.state2[i] = 0;
 			}
 			state.stone2 += total;
 			state.value = evaluation(state);
@@ -664,22 +673,30 @@ public class mancala {
 						value = tmp;
 						state.child = nextState;
 					}
+					state.value = value;
+					if (value >= state.beta) {
+						printABLog(state);
+						return value;
+					}
+					alpha = Math.max(state.alpha, value);
+					state.alpha = alpha;
+					printABLog(state);
 				} else {
 					nextState.value = Integer.MAX_VALUE;
-					int tmp = minValue(nextState, alpha, beta);
+					int tmp = minValue(nextState, state.alpha, state.beta);
 					if (value < tmp) {
 						value = tmp;
 						state.child = nextState;
 					}
-				}
-				state.value = value;
-				if (value >= beta) {
+					state.value = value;
+					if (value >= state.beta) {
+						printABLog(state);
+						return value;
+					}
+					alpha = Math.max(state.alpha, value);
+					state.alpha = alpha;
 					printABLog(state);
-					return value;
 				}
-				alpha = Math.max(alpha, value);
-				state.alpha = alpha;
-				printABLog(state);
 			}
 		} else {
 			// traverse A2, A3, ...
@@ -706,31 +723,33 @@ public class mancala {
 					}
 				} else {
 					nextState.value = Integer.MAX_VALUE;
-					int tmp = minValue(nextState, alpha, beta);
+					int tmp = minValue(nextState, state.alpha, state.beta);
 					if (value < tmp) {
 						value = tmp;
 						state.child = nextState;
 					}
 				}
 				state.value = value;
-				if (value >= beta) {
+				if (value >= state.beta) {
 					printABLog(state);
 					return value;
 				}
-				alpha = Math.max(alpha, value);
+				alpha = Math.max(state.alpha, value);
 				state.alpha = alpha;
 				printABLog(state);
 			}
 		}
+		// when knowing the max value of state
+		state.beta = value;
 		return value;
 	}
 
 	public static int minValue(ABState state, int alpha, int beta) {
 		if (whoEndGame(state).equals("A")) {
-			return endGame((ABState)state, A);
+			return endGame((ABState) state, A);
 		}
 		if (whoEndGame(state).equals("B")) {
-			return endGame((ABState)state, B);
+			return endGame((ABState) state, B);
 		}
 		if (state.depth == cutDepth) {
 			if (!state.continueMove) {
@@ -760,7 +779,7 @@ public class mancala {
 				updateNextState(state, nextState, number, traverseIndex, B);
 				if (nextState.continueMove) {
 					nextState.value = Integer.MAX_VALUE;
-					int tmp = minValue(nextState, alpha, beta);
+					int tmp = minValue(nextState, state.alpha, state.beta);
 					if (value > tmp) {
 						value = tmp;
 						state.child = nextState;
@@ -774,11 +793,11 @@ public class mancala {
 					}
 				}
 				state.value = value;
-				if (value <= alpha) {
+				if (value <= state.alpha) {
 					printABLog(state);
 					return value;
 				}
-				beta = Math.min(value, beta);
+				beta = Math.min(value, state.beta);
 				state.beta = beta;
 				printABLog(state);
 			}
@@ -800,7 +819,7 @@ public class mancala {
 				updateNextState(state, nextState, number, traverseIndex, A);
 				if (nextState.continueMove) {
 					nextState.value = Integer.MAX_VALUE;
-					int tmp = minValue(nextState, alpha, beta);
+					int tmp = minValue(nextState, state.alpha, state.beta);
 					if (value > tmp) {
 						value = tmp;
 						state.child = nextState;
@@ -814,16 +833,17 @@ public class mancala {
 					}
 				}
 				state.value = value;
-				if (value <= alpha) {
+				if (value <= state.alpha) {
 					printABLog(state);
 					return value;
 				}
-				beta = Math.min(value, beta);
+				beta = Math.min(value, state.beta);
 				state.beta = beta;
 				printABLog(state);
 			}
-
 		}
+		//when knowing the min value of state
+		state.alpha = value;
 		return value;
 	}
 }
