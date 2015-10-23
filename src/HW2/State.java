@@ -18,6 +18,7 @@ public class State {
 	public int depth;
 	public boolean continueMove;
 	public int value;
+	public State child = null;
 	
 	public State(){
 		super();
@@ -32,4 +33,16 @@ public class State {
 		continueMove = false;
 	}
 	
+	public static State copyState(int N, State state){
+		State newState = new State();
+		newState.continueMove = state.continueMove;
+		newState.depth = state.depth;
+		newState.node = state.node;
+		newState.state1 = Arrays.copyOf(state.state1, N);
+		newState.state2 = Arrays.copyOf(state.state2, N);
+		newState.stone1 = state.stone1;
+		newState.stone2 = state.stone2;
+		newState.value = state.value;
+		return newState;
+	}
 }

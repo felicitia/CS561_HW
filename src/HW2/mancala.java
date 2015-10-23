@@ -11,8 +11,8 @@ import java.util.List;
 
 public class mancala {
 
-	 static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_4.txt";
-//	static String input = "/Users/felicitia/Desktop/hw2_test/input1.txt";
+//	static String input = "/Users/felicitia/Documents/semester_3/561/HW2/input_4.txt";
+	 static String input = "/Users/felicitia/Desktop/hw2_test/input3.txt";
 	static int taskNo;
 	static int player;
 	static int cutDepth;
@@ -23,7 +23,8 @@ public class mancala {
 	static short A = 0;
 	static short B = 1;
 	static int lineNum = 0;
-	static State next_state;
+//	static State nextMove = null;
+	static int rootMax = Integer.MIN_VALUE;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -72,10 +73,16 @@ public class mancala {
 	}
 
 	public static void greedy() {
-
+		cutDepth = 1;
+		maxValue(initialState);
+		printNextState();
 	}
 
 	public static void printLog(State state, String caller) {
+		// ignore greedy
+		if(1 == taskNo){
+			return;
+		}
 		lineNum++;
 		String value = "" + state.value;
 		if (state.value == Integer.MAX_VALUE) {
@@ -119,6 +126,9 @@ public class mancala {
 				int eval = evaluation(state);
 				state.value = eval;
 				printLog(state, "MAX");
+//				if(eval > rootMax){
+//					updateNextMove(N, state, eval);
+//				}
 				return eval;
 			}
 		}
@@ -145,24 +155,32 @@ public class mancala {
 					int tmp = maxValue(nextState);
 					if (value < tmp) {
 						value = tmp;
-						if(1 == nextState.depth && !nextState.continueMove){
-							next_state = nextState;
-						}
+						state.child = nextState;
 					}
-					// value = Math.max(value, maxValue(nextState));
+//					 value = Math.max(value, maxValue(nextState));
+//					 if(value > rootMax){
+//						 updateNextMove(N, state, value);
+//					 }
 				} else {
 					nextState.value = Integer.MAX_VALUE;
 					int tmp = minValue(nextState);
 					if (value < tmp) {
 						value = tmp;
-						if(1 == nextState.depth && !nextState.continueMove){
-							next_state = nextState;
-						}
+						state.child = nextState;
 					}
-					// value = Math.max(value, minValue(nextState));
+//					 value = Math.max(value, minValue(nextState));
+//					 if(value > rootMax){
+//						 updateNextMove(N, state, value);
+//					 }
 				}
 				state.value = value;
 				printLog(state, "MAX");
+//				if(value > rootMax){
+//					updateNextMove(N, state, value);
+//				}
+//				if(state == initialState && rootMax < value){
+//					rootMax = value;
+//				}
 			}
 		} else {
 			// traverse A2, A3, ...
@@ -185,24 +203,32 @@ public class mancala {
 					int tmp = maxValue(nextState);
 					if (value < tmp) {
 						value = tmp;
-						if(1 == nextState.depth && !nextState.continueMove){
-							next_state = nextState;
-						}
+						state.child = nextState;
 					}
-					// value = Math.max(value, maxValue(nextState));
+//					 value = Math.max(value, maxValue(nextState));
+//					 if(value > rootMax){
+//						 updateNextMove(N, state, value);
+//					 }
 				} else {
 					nextState.value = Integer.MAX_VALUE;
 					int tmp = minValue(nextState);
 					if (value < tmp) {
 						value = tmp;
-						if(1 == nextState.depth && !nextState.continueMove){
-							next_state = nextState;
-						}
+						state.child = nextState;
 					}
-					// value = Math.max(value, minValue(nextState));
+//					 value = Math.max(value, minValue(nextState));
+//					 if(value > rootMax){
+//						 updateNextMove(N, state, value);
+//					 }
 				}
 				state.value = value;
 				printLog(state, "MAX");
+//				if(value > rootMax){
+//					updateNextMove(N, state, value);
+//				}
+//				if(state == initialState && rootMax < value){
+//					rootMax = value;
+//				}
 			}
 		}
 		return value;
@@ -232,6 +258,16 @@ public class mancala {
 		return "None";
 	}
 
+//	public static void updateNextMove(int N, State nextState, int eval) {
+//		System.out.println("rootMax = "+ rootMax);
+//		System.out.println("next move? "+nextState.node+" "+nextState.depth);
+//		if (1 == nextState.depth && !nextState.continueMove) {
+//			System.out.println("next move: "+nextState.node+"\t"+nextState.value);
+//			nextMove = State.copyState(N, nextState);
+//			rootMax = eval;
+//		}
+//	}
+
 	public static int endGame(State state, int AorB) {
 		int total = 0;
 		if (AorB == A) {
@@ -241,6 +277,9 @@ public class mancala {
 			state.stone1 += total;
 			state.value = evaluation(state);
 			printLog(state, "END");
+//			if(state.value > rootMax){
+//				updateNextMove(N, state, state.value);
+//			}
 			return state.value;
 		} else {
 			for (int i = 0; i < N; i++) {
@@ -249,6 +288,9 @@ public class mancala {
 			state.stone2 += total;
 			state.value = evaluation(state);
 			printLog(state, "END");
+//			if(state.value > rootMax){
+//				updateNextMove(N, state, state.value);
+//			}
 			return state.value;
 		}
 	}
@@ -355,6 +397,9 @@ public class mancala {
 				int eval = evaluation(state);
 				state.value = eval;
 				printLog(state, "MIN");
+//				if(eval > rootMax){
+//					updateNextMove(N, state, eval);
+//				}
 				return eval;
 			}
 		}
@@ -381,24 +426,29 @@ public class mancala {
 					int tmp = minValue(nextState);
 					if (value > tmp) {
 						value = tmp;
-						if(1 == nextState.depth && !nextState.continueMove){
-							next_state = nextState;
-						}
+						state.child = nextState;
 					}
-					// value = Math.min(value, minValue(nextState));
+//					 value = Math.min(value, minValue(nextState));
+//					 if(value > rootMax){
+//						 updateNextMove(N, state, value);
+//					 }
 				} else {
 					nextState.value = Integer.MIN_VALUE;
 					int tmp = maxValue(nextState);
 					if (value > tmp) {
 						value = tmp;
-						if(1 == nextState.depth && !nextState.continueMove){
-							next_state = nextState;
-						}
+						state.child = nextState;
 					}
-					// value = Math.min(value, maxValue(nextState));
+//					 value = Math.min(value, maxValue(nextState));
+//					 if(value > rootMax){
+//						 updateNextMove(N, state, value);
+//					 }
 				}
 				state.value = value;
 				printLog(state, "MIN");
+//				if(value > rootMax){
+//					updateNextMove(N, state, value);
+//				}
 			}
 
 		} else {
@@ -422,24 +472,29 @@ public class mancala {
 					int tmp = minValue(nextState);
 					if (value > tmp) {
 						value = tmp;
-						if(1 == nextState.depth && !nextState.continueMove){
-							next_state = nextState;
-						}
+						state.child = nextState;
 					}
-					// value = Math.min(value, minValue(nextState));
+//					 value = Math.min(value, minValue(nextState));
+//					 if(value > rootMax){
+//						 updateNextMove(N, state, value);
+//					 }
 				} else {
 					nextState.value = Integer.MIN_VALUE;
 					int tmp = maxValue(nextState);
 					if (value > tmp) {
 						value = tmp;
-						if(1 == nextState.depth && !nextState.continueMove){
-							next_state = nextState;
-						}
+						state.child = nextState;
 					}
-					// value = Math.min(value, maxValue(nextState));
+//					 value = Math.min(value, maxValue(nextState));
+//					 if(value > rootMax){
+//						 updateNextMove(N, state, value);
+//					 }
 				}
 				state.value = value;
 				printLog(state, "MIN");
+//				if(value > rootMax){
+//					updateNextMove(N, state, value);
+//				}
 			}
 
 		}
@@ -456,19 +511,22 @@ public class mancala {
 	}
 
 	public static void printNextState() {
-		System.out.println(next_state.node+" "+next_state.depth);
-		//print state 2
-		for (int i = 0; i < N-1; i++) {
-			stateWriter.print(next_state.state2[i] + " ");
+		State nextMove = initialState.child;
+		while(nextMove.depth == 1 && nextMove.continueMove){
+			nextMove = nextMove.child;
 		}
-		stateWriter.println(next_state.state2[N-1]);
-		//print state 1
-		for(int i=0; i<N-1; i++){
-			stateWriter.print(next_state.state1[i]+" ");
+		// print state 2
+		for (int i = 0; i < N - 1; i++) {
+			stateWriter.print(nextMove.state2[i] + " ");
 		}
-		stateWriter.println(next_state.state1[N-1]);
-		stateWriter.println(next_state.stone2);
-		stateWriter.println(next_state.stone1);
+		stateWriter.println(nextMove.state2[N - 1]);
+		// print state 1
+		for (int i = 0; i < N - 1; i++) {
+			stateWriter.print(nextMove.state1[i] + " ");
+		}
+		stateWriter.println(nextMove.state1[N - 1]);
+		stateWriter.println(nextMove.stone2);
+		stateWriter.println(nextMove.stone1);
 	}
 
 	public static int evaluation(State state) {
