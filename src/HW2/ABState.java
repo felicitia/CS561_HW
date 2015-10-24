@@ -5,6 +5,7 @@ import java.util.Arrays;
 public class ABState extends State{
 	public int alpha;
 	public int beta;
+	
 	public ABState(){
 		super();
 		// TODO Auto-generated constructor stub

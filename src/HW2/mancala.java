@@ -13,7 +13,7 @@ public class mancala {
 
 	// static String input =
 	// "/Users/felicitia/Documents/semester_3/561/HW2/input_1.txt";
-	static String input = "/Users/felicitia/Desktop/HW2_Test/input/input_7.txt";
+	static String input = "/Users/felicitia/Desktop/HW2_Test/input/input_3.txt";
 	static int taskNo;
 	static int player;
 	static int cutDepth;
@@ -29,6 +29,13 @@ public class mancala {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+//		args = new String[4];
+//		args[0] = "/Users/felicitia/Desktop/HW2_Test/input/input_1.txt";
+//		args[1] = ""+3;
+//		args[2] = "next_input_1_3.txt";
+//		args[3] = "log_input_1_3.txt";
+//		taskNo = Integer.parseInt(args[1]);
+
 		initialState = new State();
 		initialABState = new ABState();
 		initialState.depth = 0;
@@ -85,7 +92,7 @@ public class mancala {
 			logWriter.close();
 		}
 		stateWriter.close();
-		System.out.println("Done!");
+//		System.out.println(args[1]+" is Done! :D");
 	}
 
 	public static void greedy() {
@@ -594,6 +601,7 @@ public class mancala {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(input));
 			taskNo = Integer.parseInt(br.readLine());
+//			br.readLine();//skip taskNo for now
 			player = Integer.parseInt(br.readLine());
 			cutDepth = Integer.parseInt(br.readLine());
 			String[] tmp = br.readLine().split(" ");
