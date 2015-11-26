@@ -13,7 +13,7 @@ public class mancala {
 
 	// static String input =
 	// "/Users/felicitia/Documents/semester_3/561/HW2/input_1.txt";
-	static String input = "/Users/felicitia/Desktop/HW2_Test/input/input_3.txt";
+	static String input = "/Users/felicitia/Desktop/HW2_Test/case_p1/input11.txt";
 	static int taskNo;
 	static int player;
 	static int cutDepth;
