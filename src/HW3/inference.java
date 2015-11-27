@@ -1,7 +1,10 @@
 package HW3;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,7 +13,7 @@ import java.util.Map;
 
 public class inference {
 
-	private static String input = "/Users/felicitia/Documents/semester_3/561/HW3/input.txt";
+	private static String input = "/Users/felicitia/Documents/semester_3/561/HW3/noloop.txt";
 	private static ArrayList<Atom> queryList = null;
 	private static HashMap<String, ArrayList<Atom>> factMap = null;
 	private static HashMap<String, ArrayList<Rule>> ruleMap = null;
@@ -19,22 +22,40 @@ public class inference {
 	private static final short LIST = 2;
 	private static final short CONST = 3;
 	private static int nameCount = 0;
+	private static PrintWriter writer = null;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		try {
+			writer = new PrintWriter("output.txt", "UTF-8");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		queryList = new ArrayList<Atom>();
 		factMap = new HashMap<String, ArrayList<Atom>>();
 		ruleMap = new HashMap<String, ArrayList<Rule>>();
 		readInput(input);
 		for (Atom query : queryList) {
-			System.out.println(askKB(query));
+			if(askKB(query)){
+				System.out.println("TRUE");
+				writer.println("TRUE");
+			}else{
+				System.out.println("FALSE");
+				writer.println("FALSE");
+			}
 		}
+		
+		writer.close();
 	}
 
 	public static boolean askKB(Atom query) {
 		HashMap<String, String> theta = new HashMap<String, String>();
 		ArrayList<HashMap<String, String>> results = BC_OR(query, theta);
-		if(results == null){
+		if(results == null || results.isEmpty()){
 			return false;
 		}
 		for(HashMap<String, String> result: results){
@@ -159,7 +180,7 @@ public class inference {
 		}
 		if(rules!=null){
 			for (Rule rule : rules) {
-				Rule stanRule = standardize(rule, theta);
+				Rule stanRule = standardize(rule, theta, goal);
 				HashMap<String, String> unified = unify(atom2String(stanRule.getRh()), atom2String(goal), theta);
 				ArrayList<HashMap<String, String>> thetaAnds = BC_AND(stanRule.getLhs(), unified);
 				if(thetaAnds == null){
@@ -219,9 +240,6 @@ public class inference {
 	
 	public static String atom2String(Atom atom){
 		StringBuilder str = new StringBuilder();
-		if(!atom.getBool()){
-			str.append("~");
-		}
 		str.append(atom.getPredicate());
 		str.append("(");
 		str.append(list2String(atom.getArgs()));
@@ -229,13 +247,14 @@ public class inference {
 		return str.toString();
 	}
 	
-	public static Rule standardize(Rule rule, HashMap<String, String> theta) {
+	public static Rule standardize(Rule rule, HashMap<String, String> theta, Atom goal) {
 		HashMap<String, String> nameMap = new HashMap<String, String>();
 		Atom rh = rule.getRh();
 		ArrayList<Atom> lhs = rule.getLhs();
+		
 		for (Atom lh : lhs) {
 			for (String arg : lh.getArgs()) {
-				if (theta.containsKey(arg) || theta.containsValue(arg)) {
+				if (theta.containsKey(arg) || theta.containsValue(arg) || goal.getArgs().contains(arg)) {
 					if (!nameMap.containsKey(arg)) {
 						nameMap.put(arg, "x" + (nameCount++));
 					}
@@ -243,7 +262,7 @@ public class inference {
 			}
 		}
 		for (String arg : rh.getArgs()) {
-			if (theta.containsKey(arg) || theta.containsValue(arg)) {
+			if (theta.containsKey(arg) || theta.containsValue(arg) || goal.getArgs().contains(arg)) {
 				if (!nameMap.containsKey(arg)) {
 					nameMap.put(arg, "x" + (nameCount++));
 				}
@@ -332,17 +351,11 @@ public class inference {
 	public static Atom string2Atom(String line) {
 		// don't need last char, which is ')'
 		line = line.substring(0, line.length() - 1);
-		boolean bool = true;
-		if (line.charAt(0) == '~') {
-			bool = false;
-			// don't need first char, which is '~'
-			line = line.substring(1);
-		}
 		String[] bracketTokens = line.split("\\(");
 		String predicate = bracketTokens[0];
 		String[] commaTokens = bracketTokens[1].split(",");
 		ArrayList<String> args = new ArrayList<String>(
 				Arrays.asList(commaTokens));
-		return new Atom(bool, predicate, args);
+		return new Atom(predicate, args);
 	}
 }
