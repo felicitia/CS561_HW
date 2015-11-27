@@ -1,13 +1,19 @@
 package HW3;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class Atom {
 	private boolean bool;
 	private String predicate = null;
-	private List<String> args = null;
-	public Atom(boolean bool, String predicate, List<String> args) {
+	private ArrayList<String> args = null;
+	
+	public Atom(Atom newAtom){
+		super();
+		this.bool = newAtom.getBool();
+		this.predicate = newAtom.getPredicate();
+		this.args = new ArrayList<String>(newAtom.getArgs());
+	}
+	public Atom(boolean bool, String predicate, ArrayList<String> args) {
 		super();
 		this.bool = bool;
 		this.predicate = predicate;
@@ -25,8 +31,13 @@ public class Atom {
 	public void setPredicate(String predicate) {
 		this.predicate = predicate;
 	}
-	public List<String> getArgs() {
+	public ArrayList<String> getArgs() {
 		return args;
 	}
-
+	public void setArg(int idx, String value){
+		args.set(idx, value);
+	}
+	public String getArg(int idx){
+		return args.get(idx);
+	}
 }
