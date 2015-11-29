@@ -31,6 +31,15 @@ public class Rule {
 		return lhs;
 	}
 	
+	public Rule copyRule(){
+		Rule newRule = new Rule();
+		newRule.setRh(this.getRh().copyAtom());
+		for(int i=0; i<this.getLhs().size(); i++){
+			newRule.getLhs().add(this.getLhs().get(i).copyAtom());
+		}
+		return newRule;
+	}
+	
 	public void changeArgName(String before, String after){
 		ArrayList<String> args = rh.getArgs();
 		for(int i=0; i<args.size(); i++){

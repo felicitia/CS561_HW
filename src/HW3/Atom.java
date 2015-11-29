@@ -6,6 +6,10 @@ public class Atom {
 	private String predicate = null;
 	private ArrayList<String> args = null;
 	
+	public Atom(){
+		super();
+		args = new ArrayList<String>();
+	}
 	public Atom(Atom newAtom){
 		super();
 		this.predicate = newAtom.getPredicate();
@@ -17,6 +21,26 @@ public class Atom {
 		this.args = new ArrayList<String>(args);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		// TODO Auto-generated method stub
+		if(this == obj){
+			return true;
+		}
+		if(! (obj instanceof Atom)){
+			return false;
+		}
+		Atom that = (Atom)obj;
+		if(!this.predicate.equals(that.getPredicate())){
+			return false;
+		}
+		for(int i=0; i<this.args.size(); i++){
+			if(!this.args.get(i).equals(that.getArg(i))){
+				return false;
+			}
+		}
+		return true;
+	}
 	public String getPredicate() {
 		return predicate;
 	}
@@ -31,5 +55,13 @@ public class Atom {
 	}
 	public String getArg(int idx){
 		return args.get(idx);
+	}
+	public Atom copyAtom(){
+		Atom newAtom = new Atom();
+		newAtom.setPredicate(this.getPredicate());
+		for(int i=0; i<this.args.size(); i++){
+			newAtom.getArgs().add(this.getArg(i));
+		}
+		return newAtom;
 	}
 }

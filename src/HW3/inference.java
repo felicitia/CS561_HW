@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,10 +14,10 @@ import java.util.Map;
 
 public class inference {
 
-	private static String input = "/Users/felicitia/Documents/semester_3/561/HW3/noloop.txt";
-	private static ArrayList<Atom> queryList = null;
-	private static HashMap<String, ArrayList<Atom>> factMap = null;
-	private static HashMap<String, ArrayList<Rule>> ruleMap = null;
+	private static String input = "/Users/felicitia/Documents/semester_3/561/HW3/input.txt";
+	private static  ArrayList<Atom> queryList = null;
+	private static  HashMap<String, ArrayList<Atom>> factMap = null;
+	private static  HashMap<String, ArrayList<Rule>> ruleMap = null;
 	private static final short ATOM = 0;
 	private static final short VAR = 1;
 	private static final short LIST = 2;
@@ -38,32 +39,41 @@ public class inference {
 		queryList = new ArrayList<Atom>();
 		factMap = new HashMap<String, ArrayList<Atom>>();
 		ruleMap = new HashMap<String, ArrayList<Rule>>();
+		HashMap<String, String> theta = new HashMap<String, String>();
+		ArrayList<Atom> visitedGoals = new ArrayList<Atom>();
 		readInput(input);
-		for (Atom query : queryList) {
-			if(askKB(query)){
+		boolean answer;
+//		HashMap<String, ArrayList<Rule>> ruleMapCopy = new HashMap<String, ArrayList<Rule>>(ruleMap);
+		for (int i = 0; i < queryList.size(); i++) {
+//			ruleMap = new HashMap<String, ArrayList<Rule>>(ruleMapCopy);
+			Atom query = queryList.get(i);
+			answer = askKB(query, theta, visitedGoals);
+			if (answer) {
 				System.out.println("TRUE");
 				writer.println("TRUE");
-			}else{
+			} else {
 				System.out.println("FALSE");
 				writer.println("FALSE");
 			}
+			theta.clear();
+			visitedGoals.clear();
+			nameCount = 0;
 		}
-		
 		writer.close();
 	}
 
-	public static boolean askKB(Atom query) {
-		HashMap<String, String> theta = new HashMap<String, String>();
-		ArrayList<HashMap<String, String>> results = BC_OR(query, theta);
-		if(results == null || results.isEmpty()){
+	public static boolean askKB(Atom query, HashMap<String, String> theta, ArrayList<Atom> visitedGoals) {
+		ArrayList<HashMap<String, String>> results = BC_OR(query, theta,
+				visitedGoals);
+		if (results == null || results.isEmpty()) {
 			return false;
 		}
-		for(HashMap<String, String> result: results){
-			if(result == null){
-				return false;
+		for (HashMap<String, String> result : results) {
+			if (result != null) {
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	public static HashMap<String, String> unify(String x, String y,
@@ -166,38 +176,58 @@ public class inference {
 		return -1;
 	}
 
-	public static ArrayList<HashMap<String, String>> BC_OR(Atom goal,
-			HashMap<String, String> theta) {
+	public static ArrayList<HashMap<String, String>> BC_OR(final Atom goal,
+			HashMap<String, String> theta, ArrayList<Atom> visitedGoals) {
+		if (visitedGoals.contains(goal)) {
+			return null;
+		}
+		visitedGoals.add(goal);
 		ArrayList<HashMap<String, String>> thetas = new ArrayList<HashMap<String, String>>();
 		ArrayList<Atom> facts = factMap.get(goal.getPredicate());
 		ArrayList<Rule> rules = ruleMap.get(goal.getPredicate());
-		if(facts!=null){
+		if (facts != null) {
 			for (Atom fact : facts) {
 				// all args are constant, no need to standardize
-				HashMap<String, String> tmp = unify(atom2String(fact), atom2String(goal), theta);
-					thetas.add(tmp);
+				HashMap<String, String> tmp = unify(atom2String(fact),
+						atom2String(goal), theta);
+				if (tmp == null) {
+					continue;
+				}
+				thetas.add(tmp);
 			}
 		}
-		if(rules!=null){
+		if (rules != null) {
 			for (Rule rule : rules) {
 				Rule stanRule = standardize(rule, theta, goal);
-				HashMap<String, String> unified = unify(atom2String(stanRule.getRh()), atom2String(goal), theta);
-				ArrayList<HashMap<String, String>> thetaAnds = BC_AND(stanRule.getLhs(), unified);
-				if(thetaAnds == null){
-					thetas.add(null);
-				}else{
-					for(HashMap<String, String> thetaAnd: thetaAnds){
-						thetas.add(thetaAnd);
+				HashMap<String, String> unified = unify(
+						atom2String(stanRule.getRh()), atom2String(goal), theta);
+				if (unified == null) {
+					continue;
+				}
+				ArrayList<HashMap<String, String>> thetaAnds = BC_AND(
+						stanRule.getLhs(), unified, new ArrayList<Atom>(
+								visitedGoals));
+				if (thetaAnds == null) {
+					continue;
+				} else {
+					for (HashMap<String, String> thetaAnd : thetaAnds) {
+						if (thetaAnd != null) {
+							thetas.add(thetaAnd);
+						}
 					}
 				}
 			}
-		}		
+		}
+		if (thetas.isEmpty()) {
+			return null;
+		}
 		return thetas;
 	}
 
-	public static ArrayList<HashMap<String, String>> BC_AND(
-			ArrayList<Atom> goals, HashMap<String, String> theta) {
-		if (null == theta) {
+	public static ArrayList<HashMap<String, String>> BC_AND(final
+			ArrayList<Atom> goals, HashMap<String, String> theta,
+			ArrayList<Atom> visitedGoals) {
+		if (theta == null) {
 			return null;
 		}
 		ArrayList<HashMap<String, String>> thetas = new ArrayList<HashMap<String, String>>();
@@ -210,35 +240,44 @@ public class inference {
 				rest = getRestGoals(goals);
 			}
 			ArrayList<HashMap<String, String>> thetaOrs = BC_OR(
-					substitute(first, theta), theta);
-			if(thetaOrs == null){
+					substitute(first, theta), theta, new ArrayList<Atom>(
+							visitedGoals));
+			if (thetaOrs == null) {
 				return null;
-			}else{
+			} else {
 				for (HashMap<String, String> thetaOr : thetaOrs) {
+					if (thetaOr == null) {
+						continue;
+					}
 					ArrayList<HashMap<String, String>> thetaAnds = BC_AND(rest,
-							thetaOr);
-					if(thetaAnds == null){
-						thetas.add(null);
-					}else{
+							thetaOr, new ArrayList<Atom>(visitedGoals));
+					if (thetaAnds == null) {
+						continue;
+					} else {
 						for (HashMap<String, String> thetaAnd : thetaAnds) {
-							thetas.add(thetaAnd);
+							if(thetaAnd != null){
+								thetas.add(thetaAnd);
+							}
 						}
-					}	
+					}
 				}
 			}
+		}
+		if (thetas.isEmpty()) {
+			return null;
 		}
 		return thetas;
 	}
 
-	public static ArrayList<Atom> getRestGoals(ArrayList<Atom> goals){
+	public static ArrayList<Atom> getRestGoals(final ArrayList<Atom> goals) {
 		ArrayList<Atom> rest = new ArrayList<Atom>();
-		for(int i=1; i<goals.size(); i++){
+		for (int i = 1; i < goals.size(); i++) {
 			rest.add(goals.get(i));
 		}
 		return rest;
 	}
-	
-	public static String atom2String(Atom atom){
+
+	public static String atom2String(final Atom atom) {
 		StringBuilder str = new StringBuilder();
 		str.append(atom.getPredicate());
 		str.append("(");
@@ -246,15 +285,16 @@ public class inference {
 		str.append(")");
 		return str.toString();
 	}
-	
-	public static Rule standardize(Rule rule, HashMap<String, String> theta, Atom goal) {
+
+	public static Rule standardize(final Rule rule, HashMap<String, String> theta,
+			final Atom goal) {
 		HashMap<String, String> nameMap = new HashMap<String, String>();
 		Atom rh = rule.getRh();
 		ArrayList<Atom> lhs = rule.getLhs();
-		
 		for (Atom lh : lhs) {
 			for (String arg : lh.getArgs()) {
-				if (theta.containsKey(arg) || theta.containsValue(arg) || goal.getArgs().contains(arg)) {
+				if (theta.containsKey(arg) || theta.containsValue(arg)
+						|| goal.getArgs().contains(arg)) {
 					if (!nameMap.containsKey(arg)) {
 						nameMap.put(arg, "x" + (nameCount++));
 					}
@@ -262,7 +302,8 @@ public class inference {
 			}
 		}
 		for (String arg : rh.getArgs()) {
-			if (theta.containsKey(arg) || theta.containsValue(arg) || goal.getArgs().contains(arg)) {
+			if (theta.containsKey(arg) || theta.containsValue(arg)
+					|| goal.getArgs().contains(arg)) {
 				if (!nameMap.containsKey(arg)) {
 					nameMap.put(arg, "x" + (nameCount++));
 				}
@@ -271,20 +312,20 @@ public class inference {
 		if (nameMap.isEmpty()) {
 			return rule;
 		} else {
-			Rule stanRule = new Rule(rule);
+			Rule stanRule = rule.copyRule();
 			Iterator it = nameMap.entrySet().iterator();
 			while (it.hasNext()) {
 				Map.Entry pair = (Map.Entry) it.next();
 				stanRule.changeArgName(pair.getKey().toString(), pair
 						.getValue().toString());
-				it.remove(); // avoids a ConcurrentModificationException
+
 			}
 			return stanRule;
 		}
 	}
 
-	public static Atom substitute(Atom atom, HashMap<String, String> theta) {
-		Atom substAtom = new Atom(atom);
+	public static Atom substitute(final Atom atom, HashMap<String, String> theta) {
+		Atom substAtom = atom.copyAtom();
 		for (int i = 0; i < substAtom.getArgs().size(); i++) {
 			if (theta.containsKey(substAtom.getArg(i))) {
 				substAtom.setArg(i, theta.get(substAtom.getArg(i)));
