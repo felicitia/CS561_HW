@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class inference {
 
-	private static String input = "/Users/felicitia/Documents/semester_3/561/HW3/input.txt";
+	private static String input = "/Users/felicitia/Documents/semester_3/561/HW3/OliverTests/Input5.txt";
 	private static  ArrayList<Atom> queryList = null;
 	private static  HashMap<String, ArrayList<Atom>> factMap = null;
 	private static  HashMap<String, ArrayList<Rule>> ruleMap = null;
@@ -188,6 +188,11 @@ public class inference {
 		if (facts != null) {
 			for (Atom fact : facts) {
 				// all args are constant, no need to standardize
+				if(fact.equals(goal)){
+					//if goal == fact, then no need to look at rules
+					thetas.add(theta);
+					return thetas;
+				}
 				HashMap<String, String> tmp = unify(atom2String(fact),
 						atom2String(goal), theta);
 				if (tmp == null) {
@@ -293,19 +298,23 @@ public class inference {
 		ArrayList<Atom> lhs = rule.getLhs();
 		for (Atom lh : lhs) {
 			for (String arg : lh.getArgs()) {
-				if (theta.containsKey(arg) || theta.containsValue(arg)
-						|| goal.getArgs().contains(arg)) {
-					if (!nameMap.containsKey(arg)) {
-						nameMap.put(arg, "x" + (nameCount++));
+				if(typeOfString(arg)==VAR){
+					if (theta.containsKey(arg) || theta.containsValue(arg)
+							|| goal.getArgs().contains(arg)) {
+						if (!nameMap.containsKey(arg)) {
+							nameMap.put(arg, "x" + (nameCount++));
+						}
 					}
 				}
 			}
 		}
 		for (String arg : rh.getArgs()) {
-			if (theta.containsKey(arg) || theta.containsValue(arg)
-					|| goal.getArgs().contains(arg)) {
-				if (!nameMap.containsKey(arg)) {
-					nameMap.put(arg, "x" + (nameCount++));
+			if(typeOfString(arg) == VAR){
+				if (theta.containsKey(arg) || theta.containsValue(arg)
+						|| goal.getArgs().contains(arg)) {
+					if (!nameMap.containsKey(arg)) {
+						nameMap.put(arg, "x" + (nameCount++));
+					}
 				}
 			}
 		}
@@ -327,8 +336,10 @@ public class inference {
 	public static Atom substitute(final Atom atom, HashMap<String, String> theta) {
 		Atom substAtom = atom.copyAtom();
 		for (int i = 0; i < substAtom.getArgs().size(); i++) {
-			if (theta.containsKey(substAtom.getArg(i))) {
-				substAtom.setArg(i, theta.get(substAtom.getArg(i)));
+			if(typeOfString(substAtom.getArg(i)) == VAR){
+				if (theta.containsKey(substAtom.getArg(i))) {
+					substAtom.setArg(i, theta.get(substAtom.getArg(i)));
+				}
 			}
 		}
 		return substAtom;
