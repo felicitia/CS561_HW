@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class inference {
 
-	private static String input = "/Users/felicitia/Documents/semester_3/561/HW3/OliverTests/Input5.txt";
+	private static String input = "/Users/felicitia/Documents/semester_3/561/HW3/HW3Tests/Input6.txt";
 	private static  ArrayList<Atom> queryList = null;
 	private static  HashMap<String, ArrayList<Atom>> factMap = null;
 	private static  HashMap<String, ArrayList<Rule>> ruleMap = null;
@@ -176,12 +176,23 @@ public class inference {
 		return -1;
 	}
 
+	public static boolean isArgsConst(Atom atom){
+		for(String arg: atom.getArgs()){
+			if(typeOfString(arg) == VAR){
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public static ArrayList<HashMap<String, String>> BC_OR(final Atom goal,
 			HashMap<String, String> theta, ArrayList<Atom> visitedGoals) {
 		if (visitedGoals.contains(goal)) {
 			return null;
 		}
-		visitedGoals.add(goal);
+		if(isArgsConst(goal)){
+			visitedGoals.add(goal);
+		}
 		ArrayList<HashMap<String, String>> thetas = new ArrayList<HashMap<String, String>>();
 		ArrayList<Atom> facts = factMap.get(goal.getPredicate());
 		ArrayList<Rule> rules = ruleMap.get(goal.getPredicate());
@@ -337,7 +348,7 @@ public class inference {
 		Atom substAtom = atom.copyAtom();
 		for (int i = 0; i < substAtom.getArgs().size(); i++) {
 			if(typeOfString(substAtom.getArg(i)) == VAR){
-				if (theta.containsKey(substAtom.getArg(i))) {
+				while(theta.containsKey(substAtom.getArg(i))) {
 					substAtom.setArg(i, theta.get(substAtom.getArg(i)));
 				}
 			}
